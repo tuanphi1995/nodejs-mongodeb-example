@@ -1,30 +1,12 @@
 const express = require('express');
 const admin = require('firebase-admin');
-const dotenv = require('dotenv');
+const serviceAccount = require('./firebaseKey.json'); // Nạp file JSON từ firebaseKey.json
 
-// Load environment variables from .env
-dotenv.config();
-
-// Kiểm tra xem các biến môi trường đã được nạp đúng chưa
-console.log('PROJECT_ID:', process.env.PROJECT_ID);
-console.log('CLIENT_EMAIL:', process.env.CLIENT_EMAIL);
-console.log('PRIVATE_KEY:', process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.substring(0, 50) + '...' : 'No private key');
-
-// Initialize Firebase Admin SDK
-try {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.PROJECT_ID || 'default_project_id', // Kiểm tra tồn tại
-      privateKey: process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.replace(/\\n/g, '\n') : 'default_private_key',
-      clientEmail: process.env.CLIENT_EMAIL || 'default_client_email',
-    }),
-    databaseURL: `https://${process.env.PROJECT_ID || 'default_project_id'}.firebaseio.com`
-  });
-  console.log('Firebase Admin SDK initialized');
-} catch (error) {
-  console.error('Error initializing Firebase Admin SDK:', error);
-  process.exit(1); // Thoát nếu không thể khởi tạo Firebase
-}
+// Khởi tạo Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
+});
 
 const db = admin.firestore(); // Initialize Firestore
 console.log('Connected to Firestore');
