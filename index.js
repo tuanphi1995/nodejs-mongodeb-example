@@ -6,16 +6,23 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Initialize Firebase Admin SDK
-admin.initializeApp({
-  credential: admin.credential.cert({
-    projectId: process.env.PROJECT_ID,
-    privateKey: process.env.PRIVATE_KEY.replace(/\\n/g, '\n'),
-    clientEmail: process.env.CLIENT_EMAIL,
-  }),
-  databaseURL: `https://${process.env.PROJECT_ID}.firebaseio.com`
-});
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.PROJECT_ID || 'default_project_id', // kiểm tra tồn tại
+      privateKey: process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.replace(/\\n/g, '\n') : 'default_private_key',
+      clientEmail: process.env.CLIENT_EMAIL || 'default_client_email',
+    }),
+    databaseURL: `https://${process.env.PROJECT_ID || 'default_project_id'}.firebaseio.com`
+  });
+  console.log('Firebase Admin SDK initialized');
+} catch (error) {
+  console.error('Error initializing Firebase Admin SDK:', error);
+  process.exit(1); // Thoát nếu không thể khởi tạo Firebase
+}
 
 const db = admin.firestore(); // Initialize Firestore
+console.log('Connected to Firestore');
 
 const app = express();
 const port = 3000;
@@ -49,12 +56,18 @@ app.get('/items/:id', async (req, res) => {
 
 // 3. Update item by id
 app.put('/items/:id', async (req, res) => {
+  const { name, description, price } = req.body;
+  
+  if (!name || !description || !price) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
   try {
     const itemRef = db.collection('items').doc(req.params.id);
     await itemRef.update({
-      name: req.body.name,
-      description: req.body.description,
-      price: req.body.price
+      name,
+      description,
+      price
     });
     res.json({ message: 'Item updated' });
   } catch (err) {
@@ -64,11 +77,14 @@ app.put('/items/:id', async (req, res) => {
 
 // 4. Add new item
 app.post('/items', async (req, res) => {
-  const newItem = {
-    name: req.body.name,
-    description: req.body.description,
-    price: req.body.price
-  };
+  const { name, description, price } = req.body;
+
+  // Kiểm tra dữ liệu đầu vào
+  if (!name || !description || !price) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  const newItem = { name, description, price };
 
   try {
     const addedItem = await db.collection('items').add(newItem);
@@ -89,7 +105,7 @@ app.delete('/items/:id', async (req, res) => {
     }
 
     await itemRef.delete();
-    res.json({ message: 'Item deleted' });
+    res.json({ message: `Item ${req.params.id} deleted` });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
