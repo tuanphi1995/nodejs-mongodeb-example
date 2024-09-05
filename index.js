@@ -9,7 +9,7 @@ dotenv.config();
 try {
   admin.initializeApp({
     credential: admin.credential.cert({
-      projectId: process.env.PROJECT_ID || 'default_project_id', // kiểm tra tồn tại
+      projectId: process.env.PROJECT_ID || 'default_project_id', // Kiểm tra tồn tại
       privateKey: process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.replace(/\\n/g, '\n') : 'default_private_key',
       clientEmail: process.env.CLIENT_EMAIL || 'default_client_email',
     }),
@@ -27,10 +27,10 @@ console.log('Connected to Firestore');
 const app = express();
 const port = 3000;
 
-// Parse JSON -> use middleware
+// Middleware để parse JSON
 app.use(express.json());
 
-// 1. API to list all items
+// 1. API liệt kê tất cả items
 app.get('/items', async (req, res) => {
   try {
     const itemsSnapshot = await db.collection('items').get();
@@ -41,7 +41,7 @@ app.get('/items', async (req, res) => {
   }
 });
 
-// 2. Get item details by id
+// 2. Lấy chi tiết item theo id
 app.get('/items/:id', async (req, res) => {
   try {
     const itemDoc = await db.collection('items').doc(req.params.id).get();
@@ -54,7 +54,7 @@ app.get('/items/:id', async (req, res) => {
   }
 });
 
-// 3. Update item by id
+// 3. Cập nhật item theo id
 app.put('/items/:id', async (req, res) => {
   const { name, description, price } = req.body;
   
@@ -75,7 +75,7 @@ app.put('/items/:id', async (req, res) => {
   }
 });
 
-// 4. Add new item
+// 4. Thêm item mới
 app.post('/items', async (req, res) => {
   const { name, description, price } = req.body;
 
@@ -94,7 +94,7 @@ app.post('/items', async (req, res) => {
   }
 });
 
-// 5. Delete item by id
+// 5. Xóa item theo id
 app.delete('/items/:id', async (req, res) => {
   try {
     const itemRef = db.collection('items').doc(req.params.id);
@@ -111,7 +111,7 @@ app.delete('/items/:id', async (req, res) => {
   }
 });
 
-// Start the server
+// Khởi chạy server
 app.listen(port, () => {
   console.log(`Server is running on port http://localhost:${port}`);
 });
