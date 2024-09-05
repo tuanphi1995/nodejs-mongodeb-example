@@ -5,6 +5,11 @@ const dotenv = require('dotenv');
 // Load environment variables from .env
 dotenv.config();
 
+// Kiểm tra xem các biến môi trường đã được nạp đúng chưa
+console.log('PROJECT_ID:', process.env.PROJECT_ID);
+console.log('CLIENT_EMAIL:', process.env.CLIENT_EMAIL);
+console.log('PRIVATE_KEY:', process.env.PRIVATE_KEY ? process.env.PRIVATE_KEY.substring(0, 50) + '...' : 'No private key');
+
 // Initialize Firebase Admin SDK
 try {
   admin.initializeApp({
